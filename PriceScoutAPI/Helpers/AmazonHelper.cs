@@ -17,7 +17,7 @@ namespace PriceScoutAPI.Helpers
         {
             var _host = _configuration["ApiKeys:Amazon:Host"];
             var _key =  _configuration["ApiKeys:Amazon:Key"];
-
+            return "";
             try
             {
                 var fullURL = String.Format("https://{0}/search?query={1}&page=1&country=BR&sort_by=RELEVANCE&product_condition=ALL&is_prime=false", _host, m.ProductName); // -- For now on, params fixed's
