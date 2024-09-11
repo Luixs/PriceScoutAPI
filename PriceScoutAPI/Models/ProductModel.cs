@@ -2,9 +2,27 @@
 
 namespace PriceScoutAPI.Models
 {
-    public class ProductModel // : BaseModel
+    public class ProductModel : BaseModel
     {
-        [JsonPropertyName("productName")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
+
+        [JsonPropertyName("price")]
+        public double Price { get; set; }
+
+        [JsonPropertyName("url")]
+        public string Url { get; set; }
+
+        [JsonPropertyName("image_url")]
+        public string ImageUrl { get; set; }
+
+        [JsonPropertyName("e_commerce")]
+        public string ECommerce { get; set; }
+
+        [JsonPropertyName("currency")]
+        public string Currency { get; set; }
+
+        [JsonPropertyName("is_best_seller")]
+        public bool IsBestSeller { get; set; }
     }
 }

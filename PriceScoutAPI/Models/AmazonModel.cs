@@ -37,6 +37,9 @@ namespace PriceScoutAPI.Models
         [JsonPropertyName("product_price")]
         public string Price { get; set; }
 
+        [JsonPropertyName("product_price_number")]
+        public double PriceNumber{ get; set; }
+
         [JsonPropertyName("product_original_price")]
         public string OriginalPrice { get; set; }
 
