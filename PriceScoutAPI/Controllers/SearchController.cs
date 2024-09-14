@@ -27,14 +27,19 @@ namespace PriceScoutAPI.Controllers
 
             try
             {
+                /**************************************************************************************
+                //  --- Check the received Params
+                /***************************************************************************************/
+
+
                 // --- TRATAR AQUI OS PARÂMETROS DE ENTRADA
                 model.ProductName = model.ProductName.Replace(" ", "%20");
 
                 /**************************************************************************************
                 //  --- Buscar preços
                 /***************************************************************************************/
-                var foundPrices = await SearchAllPrices(model);
-                return Ok(foundPrices);
+                //var foundPrices = await SearchAllPrices(model);
+                //return Ok(foundPrices);
 
 
 
