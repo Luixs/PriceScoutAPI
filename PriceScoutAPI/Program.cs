@@ -11,6 +11,7 @@ builder.Services.AddHttpContextAccessor();
 //--------------------------------------------------------------------------------
 // --- Add services Helpers (Inject IConfiguration )  ----------------------------
 builder.Services.AddScoped<AmazonHelper>();
+builder.Services.AddScoped<CurrencyHelper>();
 builder.Services.AddScoped<AliExpressHelper>();
 
 //--------------------------------------------------------------------------------
