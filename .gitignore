@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 /PriceScoutAPI/appsettings.json
 /PriceScoutAPI/appsettings.Development.json
+/PriceScoutAPI/Logs/Walks_Log20240914.txt
+/PriceScoutAPI/Logs/Walks_Log20240914.txt
