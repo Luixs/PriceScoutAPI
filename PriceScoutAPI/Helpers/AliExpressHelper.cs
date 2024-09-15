@@ -19,10 +19,24 @@ namespace PriceScoutAPI.Helpers
         {
             var _key= _configuration["ApiKeys:RapidApi"];
             var _host = _configuration["ApiKeys:AliexpressHost"];
+            var filters = "";
+
+            // --- Has a minimum price?
+            if (m.MinPrice != 0)
+            {
+                filters = $"&startPrice={m.MinPrice}";
+            }
+
+            // --- Has a maximum price?
+            if (m.MaxPrice != 0)
+            {
+                filters = $"{filters}&endPrice={m.MaxPrice}";
+            }
 
             try
             {
-                var fullURL = String.Format("https://{0}/item_search?q={1}&page=1&sort=default", _host, m.ProductName); // -- For now on, params fixed's
+                var fullURL = String.Format("https://{0}/item_search?q={1}&page=1&sort=default&region={2}", _host, m.ProductName, m.Country); // -- For now on, params fixed's
+                fullURL += filters;
                 var requestM = new HttpRequestMessage
                 {
                     Method = HttpMethod.Get,

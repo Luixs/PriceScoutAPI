@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PriceScoutAPI.Helpers;
 using PriceScoutAPI.Models;
+using System.Globalization;
 using System.Text.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -43,6 +44,16 @@ namespace PriceScoutAPI.Controllers
                 /***************************************************************************************/
                 bool priceSearchMethod = (m.MinPrice != 0 || m.MaxPrice != 0);
 
+                // -- If you activate the method, check if there are two values (Different from zero)
+                // --- and check if the smaller one is greater than the larger one (this is a error!)
+                bool bouthPricesValidateError = ((m.MinPrice != 0 && m.MaxPrice != 0) && m.MinPrice > m.MaxPrice);
+                if(bouthPricesValidateError)
+                {
+                    resp.Success = false;
+                    resp.Message = "Correct the values entered";
+                    return BadRequest(resp);
+                }
+
                 // --- MIN or MAX prices
                 if(priceSearchMethod &&  string.IsNullOrEmpty(m.Currency))
                 {
@@ -52,12 +63,13 @@ namespace PriceScoutAPI.Controllers
                 //  --- Prepare the PRICE SEARCH METHOD
                 if (priceSearchMethod)
                 {
+
                     currencyPrice = await _currencyHelper.ChangeCurrency(m.Currency!.ToUpper());
                 }
 
                 // --- Country Parameter
                 var countryParams = m.Country ?? "";
-                var availableCountries = new string[] { "US", "AU", "BR", "CA", "CN", "FR", "DE", "IN", "IT", "MX", "NL", "SG", "ES", "TR", "AE", "GB", "JP", "SA", "PL", "SE", "BE", "EG" }.Contains(countryParams.ToUpper());
+                var availableCountries = new string[] { "US", "BR", "ES", "FR", "NL", "CA", "IT", "PL", "AU", "DE", "BE" }.Contains(countryParams.ToUpper());
                 var searchIn = availableCountries ? countryParams.ToUpper() : "US";
                 m.Country = searchIn;
 
@@ -74,15 +86,6 @@ namespace PriceScoutAPI.Controllers
                 /***************************************************************************************
                 //  --- Filtering Return Handle
                 /***************************************************************************************/
-                if (priceSearchMethod && m.MinPrice != 0) // --- Min Price
-                {
-                    foundPrices = foundPrices.FindAll(x=> x.Price >= m.MinPrice);
-                }
-                if(priceSearchMethod && m.MaxPrice > 0) // --- Max Price
-                {
-                    foundPrices = foundPrices.FindAll(x => x.Price <= m.MaxPrice);
-                }
-
                 // --- SORT BY (DESC | ASC)
                 var sortBy = m.SortBy ?? "ASC";
                 switch (sortBy.ToUpper())
@@ -122,7 +125,7 @@ namespace PriceScoutAPI.Controllers
             {
                 var logM = new LogModel
                 {
-                    Error = ex.Message.Substring(0,150),
+                    Error = ex?.Message?.Substring(0,150),
                     RequestModel = m,
                     ErrorCode = "ERR01"
                 }; 
@@ -166,12 +169,13 @@ namespace PriceScoutAPI.Controllers
                         {
                             topList.Add(new ProductModel
                             {
-                                ID = p.Item.Id.ToString(),
-                                ECommerce = "AliExpress",
                                 Currency = "US",
                                 Name = p.Item.Title,
                                 IsBestSeller = false,
+                                ECommerce = "AliExpress",
+                                ID = p.Item.Id.ToString(),
                                 ImageUrl = p.Item.ImageUrl,
+                                StarRange = p.Item.StarRate ?? 0,
                                 Price = p.Item.Sku.Def.Prices.AppPrice * currencyMultiply
                             });
                         }
@@ -189,6 +193,7 @@ namespace PriceScoutAPI.Controllers
                                 ID = p.Asin,
                                 ECommerce = "Amazon",
                                 Currency = p.Currency ?? "",
+                                StarRange = double.Parse(p.StarRating, CultureInfo.InvariantCulture),
                                 Name = p.Name,
                                 IsBestSeller = p.IsBestSeller,
                                 ImageUrl = p.ImageUrl,

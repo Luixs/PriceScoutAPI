@@ -1,4 +1,5 @@
 ﻿using PriceScoutAPI.Models;
+using System.Globalization;
 using System.Text.Json;
 
 namespace PriceScoutAPI.Helpers
@@ -19,15 +20,24 @@ namespace PriceScoutAPI.Helpers
         {
             var _key = _configuration["ApiKeys:RapidApi"];
             var _host = _configuration["ApiKeys:AmazonHost"];
+            var filters = "";
 
-            // --- Has a max price?
+            // --- Has a minimum price?
+            if(m.MinPrice != 0)
+            {
+                filters = $"&min_price={m.MinPrice}";
+            }
 
-            // --- Has a minimium price?
-            
+            // --- Has a maximum price?
+            if (m.MaxPrice != 0)
+            {
+                filters = $"{filters}&max_price={m.MaxPrice}";
+            }
 
             try
             {
                 var fullURL = String.Format("https://{0}/search?query={1}&page=1&country={2}&sort_by=RELEVANCE&product_condition=ALL&is_prime=false", _host, m.ProductName, m.Country); // -- For now on, params fixed's
+                fullURL += filters;
                 var requestM = new HttpRequestMessage
                 {
                     Method = HttpMethod.Get,
@@ -67,7 +77,7 @@ namespace PriceScoutAPI.Helpers
 
                         try
                         {
-                            p.PriceNumber = double.Parse(removeDolar.Trim());
+                            p.PriceNumber = double.Parse(removeDolar.Trim(),CultureInfo.InvariantCulture);
                         }
                         catch (Exception ex)
                         {

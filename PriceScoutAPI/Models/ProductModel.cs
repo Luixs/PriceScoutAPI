@@ -24,5 +24,8 @@ namespace PriceScoutAPI.Models
 
         [JsonPropertyName("is_best_seller")]
         public bool IsBestSeller { get; set; }
+
+        [JsonPropertyName("star_range")]
+        public double StarRange { get; set; }
     }
 }

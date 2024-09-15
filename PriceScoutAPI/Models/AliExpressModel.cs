@@ -39,6 +39,9 @@ namespace PriceScoutAPI.Models
 
         [JsonPropertyName("sku")]
         public ItemAliSku Sku { get; set; }
+
+        [JsonPropertyName("averageStarRate")]
+        public double? StarRate { get; set; }
     }
 
     public class ItemAliSku
