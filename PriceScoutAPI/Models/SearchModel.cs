@@ -27,16 +27,39 @@ namespace PriceScoutAPI.Models
         [JsonPropertyName("limit")]
         public int? Limit { get; set; }
 
+        [JsonPropertyName("country")]
+        public string? Country { get; set; }
+
         //[JsonPropertyName("barCode")]
         //public string BarCode { get; set; }
-
-
 
         //[JsonPropertyName("store")]
         //public string Store { get; set; }
 
         //[JsonPropertyName("category")]
         //public string Category { get; set; }
+    }
+
+    public class SearchModelResponse
+    {
+
+        [JsonPropertyName("total_itens_found")]
+        public int TotalProducts { get; set; }
+
+        [JsonPropertyName("highestPrice")]
+        public double HighestPrice { get; set; }
+
+        [JsonPropertyName("lowestPrice")]
+        public double LowestPrice { get; set;}
+
+        [JsonPropertyName("averagePrice")]
+        public double AveragePrice { get; set; }
+
+        [JsonPropertyName("best_option")]
+        public ProductModel BestProductOption { get; set; }
+
+        [JsonPropertyName("products")]
+        public List<ProductModel> Products { get; set; }
 
     }
 }

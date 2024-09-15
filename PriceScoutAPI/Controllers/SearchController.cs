@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PriceScoutAPI.Helpers;
 using PriceScoutAPI.Models;
+using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PriceScoutAPI.Controllers
 {
@@ -13,20 +15,26 @@ namespace PriceScoutAPI.Controllers
         private readonly AmazonHelper _amazonHelper;
         private readonly AliExpressHelper _aliExpressHelper;
         private readonly CurrencyHelper _currencyHelper;
+        private readonly ILogger<SearchController> _logger;
 
-        public SearchController(AmazonHelper amazonHelper, AliExpressHelper aliExpressHelper, CurrencyHelper currencyHelper)
+        public SearchController(AmazonHelper amazonHelper, AliExpressHelper aliExpressHelper, CurrencyHelper currencyHelper, ILogger<SearchController> logger)
         {
             _amazonHelper = amazonHelper;
             _aliExpressHelper = aliExpressHelper;
             _currencyHelper = currencyHelper;
+            _logger = logger;
         }
 
         [HttpPost]
         public async Task<IActionResult> SearchSingleProduct([FromBody] SearchModel m)
         {
+
             // --- INITAL VALUES
             var resp = new BaseResponse();
             var currencyPrice = 1.0;
+            
+
+
 
             try
             {
@@ -41,13 +49,17 @@ namespace PriceScoutAPI.Controllers
                     return BadRequest("You need to pass the 'currency' property when you enter the minimum or maximum value");
                 }
 
-                /**************************************************************************************
                 //  --- Prepare the PRICE SEARCH METHOD
-                /**************************************************************************************/
                 if (priceSearchMethod)
                 {
                     currencyPrice = await _currencyHelper.ChangeCurrency(m.Currency!.ToUpper());
                 }
+
+                // --- Country Parameter
+                var countryParams = m.Country ?? "";
+                var availableCountries = new string[] { "US", "AU", "BR", "CA", "CN", "FR", "DE", "IN", "IT", "MX", "NL", "SG", "ES", "TR", "AE", "GB", "JP", "SA", "PL", "SE", "BE", "EG" }.Contains(countryParams.ToUpper());
+                var searchIn = availableCountries ? countryParams.ToUpper() : "US";
+                m.Country = searchIn;
 
 
                 // --- Handling the search parameter
@@ -57,7 +69,7 @@ namespace PriceScoutAPI.Controllers
                 //  --- Search Prices
                 /***************************************************************************************/
                 var foundPrices = await SearchAllPrices(m, currencyPrice, m.Currency ?? "USD");
-
+                if (foundPrices == null || foundPrices.Count == 0) return Ok();
 
                 /***************************************************************************************
                 //  --- Filtering Return Handle
@@ -82,15 +94,45 @@ namespace PriceScoutAPI.Controllers
 
                 // --- LIMIT 
                 var limit = m.Limit ?? foundPrices.Count;
-                return Ok(foundPrices.Take(limit).ToList());
+                foundPrices = foundPrices.Take(limit).ToList();
+
+                /***************************************************************************************
+                //  --- Filtering
+                /***************************************************************************************/
+
+                /***************************************************************************************
+                //  --- Prepare model for return
+                /***************************************************************************************/
+                var modelResp = new SearchModelResponse()
+                {
+                    BestProductOption = foundPrices[0],
+                    TotalProducts = foundPrices.Count,
+                    LowestPrice = foundPrices.MinBy(x => x.Price).Price,
+                    HighestPrice = foundPrices.MaxBy(x => x.Price).Price,
+                    AveragePrice =  Math.Round(foundPrices.Average(x => x.Price),2),
+                    Products = foundPrices
+                };
+                resp.Data = modelResp;
+
+                return Ok(resp);
 
 
             }
             catch (Exception ex)
             {
-
+                var logM = new LogModel
+                {
+                    Error = ex.Message.Substring(0,150),
+                    RequestModel = m,
+                    ErrorCode = "ERR01"
+                }; 
+                
+                _logger.LogError(JsonSerializer.Serialize(logM));
+                resp.Success = false;
+                resp.Message = "ERR01-ERROR";
+                return BadRequest(resp);
             }
-            return Ok(resp);
+            
         }
 
         /**************************************************************************************
@@ -162,10 +204,17 @@ namespace PriceScoutAPI.Controllers
             }
             catch (Exception ex)
             {
+                var logM = new LogModel
+                {
+                    Error = ex.Message[..150],
+                    RequestModel = model,
+                    ErrorCode = "ERR03"
+                };
+                _logger.LogError(JsonSerializer.Serialize(logM));
 
             }
 
-            return null;
+            return topList;
         }
     }
 }

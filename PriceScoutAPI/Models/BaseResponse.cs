@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace PriceScoutAPI.Models
 {
@@ -23,5 +24,8 @@ namespace PriceScoutAPI.Models
         /// Request response message
         /// </summary>
         public string Message { get; set; }
+
+        [JsonPropertyName("data")]
+        public SearchModelResponse Data { get; set; }
     }
 }

@@ -1,6 +1,19 @@
 using PriceScoutAPI.Helpers;
+using Serilog;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//--------------------------------------------------------------------------------
+// --- Log System ----------------------------------------------------------------
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/Walks_Log.txt", rollingInterval: RollingInterval.Day)
+    .MinimumLevel.Error()
+    .CreateLogger();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
 //--------------------------------------------------------------------------------
 // --- Add services to the container ---------------------------------------------

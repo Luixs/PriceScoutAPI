@@ -7,10 +7,12 @@ namespace PriceScoutAPI.Helpers
     {
         private readonly IConfiguration _configuration;
         private static HttpClient client = new HttpClient();
+        private readonly ILogger<AmazonHelper> _logger;
 
-        public AmazonHelper(IConfiguration configuration)
+        public AmazonHelper(IConfiguration configuration, ILogger<AmazonHelper> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<AmazonModel?> FindPrices(SearchModel m)
@@ -18,9 +20,14 @@ namespace PriceScoutAPI.Helpers
             var _key = _configuration["ApiKeys:RapidApi"];
             var _host = _configuration["ApiKeys:AmazonHost"];
 
+            // --- Has a max price?
+
+            // --- Has a minimium price?
+            
+
             try
             {
-                var fullURL = String.Format("https://{0}/search?query={1}&page=1&country=BR&sort_by=RELEVANCE&product_condition=ALL&is_prime=false", _host, m.ProductName); // -- For now on, params fixed's
+                var fullURL = String.Format("https://{0}/search?query={1}&page=1&country={2}&sort_by=RELEVANCE&product_condition=ALL&is_prime=false", _host, m.ProductName, m.Country); // -- For now on, params fixed's
                 var requestM = new HttpRequestMessage
                 {
                     Method = HttpMethod.Get,
@@ -42,7 +49,7 @@ namespace PriceScoutAPI.Helpers
 
                 var AllProducts = JsonSerializer.Deserialize<AmazonModel>(DynamicBodyToFix);
 
-                // --- PEGANDO APENAS OS QUE TEM PREÇOS
+                // --- Get only if exist array
                 if (AllProducts != null && AllProducts.Data.Products.Count > 0)
                 {
 
@@ -64,7 +71,6 @@ namespace PriceScoutAPI.Helpers
                         }
                         catch (Exception ex)
                         {
-                            // --- Log here, after...
                             p.PriceNumber = -9999.00;
                         }
                     }
@@ -75,9 +81,15 @@ namespace PriceScoutAPI.Helpers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ERR01 - AMZ");
-                Console.WriteLine(ex.ToString().Substring(0, 500));
-                Console.WriteLine("ERR01 - AMZ:END");
+
+                var logM = new LogModel
+                {
+                    Error = ex.Message.Substring(0, 150),
+                    RequestModel = m,
+                    ErrorCode = "ERR03"
+                };
+
+                _logger.LogError(JsonSerializer.Serialize(logM));
                 return null;
             }
         }

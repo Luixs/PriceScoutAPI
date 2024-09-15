@@ -7,10 +7,12 @@ namespace PriceScoutAPI.Helpers
     {
         private readonly IConfiguration _configuration;
         private static HttpClient client = new HttpClient();
+        private readonly ILogger<AliExpressHelper> _logger;
 
-        public AliExpressHelper(IConfiguration configuration)
+        public AliExpressHelper(IConfiguration configuration, ILogger<AliExpressHelper> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<AliExpressModel?> FindPrices(SearchModel m)
@@ -45,9 +47,15 @@ namespace PriceScoutAPI.Helpers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ERR01 - AliExpress");
-                Console.WriteLine(ex.ToString().Substring(0, 500));
-                Console.WriteLine("ERR01 - AliExpress:END");
+                var logM = new LogModel
+                {
+                    Error = ex.Message[..150],
+                    RequestModel = m,
+                    ErrorCode = "ERR04"
+                };
+
+                _logger.LogError(JsonSerializer.Serialize(logM));
+
                 return null;
             }
         }
