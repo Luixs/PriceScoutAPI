@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PriceScoutAPI.Helpers;
+using PriceScoutAPI.Interfaces;
 using PriceScoutAPI.Models;
 using System.Globalization;
 using System.Text.Json;
@@ -17,12 +18,20 @@ namespace PriceScoutAPI.Controllers
         private readonly AliExpressHelper _aliExpressHelper;
         private readonly CurrencyHelper _currencyHelper;
         private readonly ILogger<SearchController> _logger;
+        private readonly IBestOptionHelper _bestOptionHelper;
 
-        public SearchController(AmazonHelper amazonHelper, AliExpressHelper aliExpressHelper, CurrencyHelper currencyHelper, ILogger<SearchController> logger)
+        public SearchController(
+            AmazonHelper amazonHelper, 
+            AliExpressHelper aliExpressHelper, 
+            CurrencyHelper currencyHelper, 
+            ILogger<SearchController> logger,
+            IBestOptionHelper bestOptionHelper
+        )
         {
-            _amazonHelper = amazonHelper;
+            _bestOptionHelper = bestOptionHelper; 
             _aliExpressHelper = aliExpressHelper;
             _currencyHelper = currencyHelper;
+            _amazonHelper = amazonHelper;
             _logger = logger;
         }
 

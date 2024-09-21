@@ -1,4 +1,5 @@
 using PriceScoutAPI.Helpers;
+using PriceScoutAPI.Interfaces;
 using Serilog;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -26,6 +27,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AmazonHelper>();
 builder.Services.AddScoped<CurrencyHelper>();
 builder.Services.AddScoped<AliExpressHelper>();
+
+// --- Adding the interface, insted of the class
+builder.Services.AddScoped<IBestOptionHelper, BestOptionHelper>(); // --- Linked both!
 
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
