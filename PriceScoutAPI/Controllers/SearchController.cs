@@ -109,8 +109,9 @@ namespace PriceScoutAPI.Controllers
                 foundPrices = foundPrices.Take(limit).ToList();
 
                 /***************************************************************************************
-                //  --- Filtering
+                //  --- Find the best option
                 /***************************************************************************************/
+                var bestOption = _bestOptionHelper.ChooseBestOption(foundPrices);
 
 
                 /***************************************************************************************
@@ -118,7 +119,7 @@ namespace PriceScoutAPI.Controllers
                 /***************************************************************************************/
                 var modelResp = new SearchModelResponse()
                 {
-                    BestProductOption = foundPrices[0],
+                    BestProductOption = bestOption,
                     TotalProducts = foundPrices.Count,
                     LowestPrice = foundPrices.MinBy(x => x.Price).Price,
                     HighestPrice = foundPrices.MaxBy(x => x.Price).Price,
@@ -135,14 +136,14 @@ namespace PriceScoutAPI.Controllers
             {
                 var logM = new LogModel
                 {
-                    Error = ex?.Message?.Substring(0,150),
+                    Error = ex.ToString()[..150],
                     RequestModel = m,
-                    ErrorCode = "ERR01"
+                    ErrorCode = "ERR_SearchController_SearchSingleProduct"
                 }; 
                 
                 _logger.LogError(JsonSerializer.Serialize(logM));
                 resp.Success = false;
-                resp.Message = "ERR01-ERROR";
+                resp.Message = "INTERNAL ERROR";
                 return BadRequest(resp);
             }
             
