@@ -1,18 +1,20 @@
-﻿using PriceScoutAPI.Models;
+﻿using PriceScoutAPI.Interfaces;
+using PriceScoutAPI.Models;
 using System.Text.Json;
 
 namespace PriceScoutAPI.Helpers
 {
-    public class AliExpressHelper
+    public class AliExpressHelper : IAliExpressHelper
     {
         private readonly IConfiguration _configuration;
-        private static HttpClient client = new HttpClient();
+        private HttpClient _client;
         private readonly ILogger<AliExpressHelper> _logger;
 
-        public AliExpressHelper(IConfiguration configuration, ILogger<AliExpressHelper> logger)
+        public AliExpressHelper(IConfiguration configuration, ILogger<AliExpressHelper> logger, IHttpClientFactory client)
         {
             _configuration = configuration;
             _logger = logger;
+            _client = client.CreateClient(nameof(IAliExpressHelper));
         }
 
         public async Task<AliExpressModel?> FindPrices(SearchModel m)
@@ -48,7 +50,7 @@ namespace PriceScoutAPI.Helpers
                     }
                 };
 
-                var response = await client.SendAsync(requestM);
+                var response = await _client.SendAsync(requestM);
                 response.EnsureSuccessStatusCode();
 
                 // --- RESPONSE BODY

@@ -1,7 +1,9 @@
+
+using Polly;
 using PriceScoutAPI.Helpers;
 using PriceScoutAPI.Interfaces;
 using Serilog;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,19 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
 //--------------------------------------------------------------------------------
+// --- Http Clients configurations -----------------------------------------------
+builder.Services.AddHttpClient<IAliExpressHelper, AliExpressHelper>().AddPolicyHandler(
+    Policy.Handle<HttpRequestException>()
+    .WaitAndRetryAsync(3, retryAttemp => TimeSpan.FromSeconds(Math.Pow(2, retryAttemp)))
+    .AsAsyncPolicy<HttpResponseMessage>()
+);
+
+builder.Services.AddHttpClient<IAmazonHelper, AmazonHelper>().AddPolicyHandler(
+    Policy.Handle<HttpRequestException>()
+    .WaitAndRetryAsync(3, retryAttemp => TimeSpan.FromSeconds(Math.Pow(2, retryAttemp)))
+    .AsAsyncPolicy<HttpResponseMessage>()
+);
+//--------------------------------------------------------------------------------
 // --- Add services to the container ---------------------------------------------
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
@@ -26,10 +41,12 @@ builder.Services.AddHttpContextAccessor();
 // --- Add services Helpers (Inject IConfiguration )  ----------------------------
 builder.Services.AddScoped<AmazonHelper>();
 builder.Services.AddScoped<CurrencyHelper>();
-builder.Services.AddScoped<AliExpressHelper>();
+//builder.Services.AddScoped<AliExpressHelper>();
 
 // --- Adding the interface, insted of the class
 builder.Services.AddScoped<IBestOptionHelper, BestOptionHelper>(); // --- Linked both!
+builder.Services.AddScoped<IAliExpressHelper, AliExpressHelper>(); // --- Linked both!
+builder.Services.AddScoped<IAmazonHelper, AmazonHelper>(); // --- Linked both!
 
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------

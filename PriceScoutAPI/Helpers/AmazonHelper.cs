@@ -1,19 +1,21 @@
-﻿using PriceScoutAPI.Models;
+﻿using PriceScoutAPI.Interfaces;
+using PriceScoutAPI.Models;
 using System.Globalization;
 using System.Text.Json;
 
 namespace PriceScoutAPI.Helpers
 {
-    public class AmazonHelper
+    public class AmazonHelper : IAmazonHelper
     {
+        private HttpClient _client;
         private readonly IConfiguration _configuration;
-        private static HttpClient client = new HttpClient();
         private readonly ILogger<AmazonHelper> _logger;
 
-        public AmazonHelper(IConfiguration configuration, ILogger<AmazonHelper> logger)
+        public AmazonHelper(IConfiguration configuration, ILogger<AmazonHelper> logger, IHttpClientFactory client)
         {
             _configuration = configuration;
             _logger = logger;
+            _client = client.CreateClient(nameof(IAmazonHelper));
         }
 
         public async Task<AmazonModel?> FindPrices(SearchModel m)
@@ -49,7 +51,7 @@ namespace PriceScoutAPI.Helpers
                     }
                 };
 
-                var response = await client.SendAsync(requestM);
+                var response = await _client.SendAsync(requestM);
                 response.EnsureSuccessStatusCode();
 
                 // --- RESPONSE BODY

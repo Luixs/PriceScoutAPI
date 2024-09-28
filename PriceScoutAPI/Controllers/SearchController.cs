@@ -14,15 +14,15 @@ namespace PriceScoutAPI.Controllers
     public class SearchController : ControllerBase
     {
 
-        private readonly AmazonHelper _amazonHelper;
-        private readonly AliExpressHelper _aliExpressHelper;
+        private readonly IAmazonHelper _amazonHelper;
+        private readonly IAliExpressHelper _aliExpressHelper;
         private readonly CurrencyHelper _currencyHelper;
         private readonly ILogger<SearchController> _logger;
         private readonly IBestOptionHelper _bestOptionHelper;
 
         public SearchController(
-            AmazonHelper amazonHelper, 
-            AliExpressHelper aliExpressHelper, 
+            IAmazonHelper amazonHelper,
+            IAliExpressHelper aliExpressHelper, 
             CurrencyHelper currencyHelper, 
             ILogger<SearchController> logger,
             IBestOptionHelper bestOptionHelper
