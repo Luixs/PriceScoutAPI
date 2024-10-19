@@ -2,6 +2,9 @@
 
 namespace PriceScoutAPI.Models
 {
+    /// <summary>
+    /// Returns a list of amazon products
+    /// </summary>
     public class AmazonModel
     {
         [JsonPropertyName("status")]
@@ -12,6 +15,21 @@ namespace PriceScoutAPI.Models
 
         [JsonPropertyName("data")]
         public InfoProductsAmazon Data { get; set; }
+    }
+
+    /// <summary>
+    /// Return a unique Product details
+    /// </summary>
+    public class AmazonSingleModel
+    {
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+
+        [JsonPropertyName("request_id")]
+        public string RequestId { get; set; }
+
+        [JsonPropertyName("data")]
+        public ProductAmazon Data { get; set; }
     }
 
     public class InfoProductsAmazon

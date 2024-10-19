@@ -14,20 +14,23 @@ namespace PriceScoutAPI.Controllers
     public class SearchController : ControllerBase
     {
 
-        private readonly IAmazonHelper _amazonHelper;
+        private readonly IMercadoLibreHelper _mercadoLibreHelper;
         private readonly IAliExpressHelper _aliExpressHelper;
-        private readonly CurrencyHelper _currencyHelper;
-        private readonly ILogger<SearchController> _logger;
         private readonly IBestOptionHelper _bestOptionHelper;
+        private readonly ILogger<SearchController> _logger;
+        private readonly CurrencyHelper _currencyHelper;
+        private readonly IAmazonHelper _amazonHelper;
 
         public SearchController(
             IAmazonHelper amazonHelper,
             IAliExpressHelper aliExpressHelper, 
             CurrencyHelper currencyHelper, 
             ILogger<SearchController> logger,
-            IBestOptionHelper bestOptionHelper
+            IBestOptionHelper bestOptionHelper,
+            IMercadoLibreHelper mercadoLibreHelper
         )
         {
+            _mercadoLibreHelper = mercadoLibreHelper;
             _bestOptionHelper = bestOptionHelper; 
             _aliExpressHelper = aliExpressHelper;
             _currencyHelper = currencyHelper;
@@ -43,9 +46,6 @@ namespace PriceScoutAPI.Controllers
             var resp = new BaseResponse();
             var currencyPrice = 1.0;
             
-
-
-
             try
             {
                 /**************************************************************************************
@@ -162,15 +162,19 @@ namespace PriceScoutAPI.Controllers
             {
                 // --- TIMER HERE
 
+                // --- MERCADO LIBRE SEARCH
+                var mercadoLibreList = await _mercadoLibreHelper.FindPrices(model);
+
                 // --- AMAZON SEARCH
                 var amazonList = await _amazonHelper.FindPrices(model);
 
                 // --- ALIEXPRESS SEARCH
                 var aliExpressList = await _aliExpressHelper.FindPrices(model);
 
+
                 /**************************************************************************************
-                //  --- Listando de acordo com os melhores atributos selecionados ou disponibilizados
-                //      pela plataforma.
+                //  --- Listing according to the best attributes selected or made avalible by
+                        the plataform.
                 /***************************************************************************************/
                 if (aliExpressList != null && aliExpressList.Result.Products != null && aliExpressList.Result.Products.Count > 0)
                 {
@@ -204,12 +208,34 @@ namespace PriceScoutAPI.Controllers
                                 ID = p.Asin,
                                 ECommerce = "Amazon",
                                 Currency = p.Currency ?? "",
-                                StarRange = double.Parse(p.StarRating, CultureInfo.InvariantCulture),
+                                StarRange = double.Parse((p.StarRating ?? "0"), CultureInfo.InvariantCulture),
                                 Name = p.Name,
                                 IsBestSeller = p.IsBestSeller,
                                 ImageUrl = p.ImageUrl,
                                 Price = (p.Currency != null && p.Currency.ToUpper().Equals(currencySelected)) ? p.PriceNumber : p.PriceNumber * currencyMultiply,
                                 Url = p.Url
+                            });
+                        }
+                    }
+                }
+
+                if(mercadoLibreList != null && mercadoLibreList.Results.Count > 0)
+                {
+                    foreach(var p in mercadoLibreList.Results)
+                    {
+                        if(p.PriceInfo.Amount != 0 && p.PriceInfo.OriginalPrice != 0)
+                        {
+                            topList.Add(new ProductModel
+                            {
+                                ID = p.Id,
+                                ECommerce = "Mercado Libre",
+                                Currency = p.PriceInfo.Currency,
+                                Name = p.Name,
+                                ImageUrl = p.Pictures?.Images?.Url ?? "",
+                                Price = (p.PriceInfo.Currency != null && p.PriceInfo.Currency.ToUpper().Equals(currencySelected)) ? p.PriceInfo.Amount : p.PriceInfo.Amount  * currencyMultiply,
+                                StarRange = p.Reviews.RatingAverage,
+                                Url = p.Url,
+                                IsBestSeller = p.SelerInfo.SellerStatus.Equals("platinum") ? true : false,
                             });
                         }
                     }

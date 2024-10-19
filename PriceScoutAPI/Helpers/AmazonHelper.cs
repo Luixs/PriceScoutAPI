@@ -10,18 +10,23 @@ namespace PriceScoutAPI.Helpers
         private HttpClient _client;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AmazonHelper> _logger;
+        private readonly string _key;
+        private readonly string _host;
 
         public AmazonHelper(IConfiguration configuration, ILogger<AmazonHelper> logger, IHttpClientFactory client)
         {
             _configuration = configuration;
             _logger = logger;
             _client = client.CreateClient(nameof(IAmazonHelper));
+
+            // --- Getting consts...
+            _key = _configuration["ApiKeys:RapidApi"] ?? "";
+            _host = _configuration["ApiKeys:AmazonHost"] ?? "";
         }
 
         public async Task<AmazonModel?> FindPrices(SearchModel m)
         {
-            var _key = _configuration["ApiKeys:RapidApi"];
-            var _host = _configuration["ApiKeys:AmazonHost"];
+            // --- Initial values
             var filters = "";
 
             // --- Has a minimum price?
@@ -106,6 +111,44 @@ namespace PriceScoutAPI.Helpers
             }
         }
 
+        public async Task<AmazonSingleModel?> FindUniqueProduct(string id)
+        {
+            try
+            {
+                var fullURL = String.Format("https://{0}/product-details?asin={1}", _host, id); // -- For now on, params fixed's
+                var requestM = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Get,
+                    RequestUri = new Uri(fullURL),
+                    Headers =
+                    {
+                        { "x-rapidapi-key", _key },
+                        { "x-rapidapi-host", _host },
+                    }
+                };
 
+                var response = await _client.SendAsync(requestM);
+                response.EnsureSuccessStatusCode();
+
+                // --- HANDLING THE RESPONSE BODY
+                var DynamicBodyToFix = response.Content.ReadAsStringAsync().Result;
+                var ProductFound = JsonSerializer.Deserialize<AmazonSingleModel>(DynamicBodyToFix);
+
+                return ProductFound;
+
+
+            } catch (Exception ex)
+            {
+                var logM = new LogModel
+                {
+                    Error = ex.Message.Substring(0, 150),
+                    RequestModel = id,
+                    ErrorCode = "ERR03"
+                };
+
+                _logger.LogError(JsonSerializer.Serialize(logM));
+                return null;
+            }
+        }
     }
 }

@@ -28,4 +28,16 @@ namespace PriceScoutAPI.Models
         [JsonPropertyName("star_range")]
         public double StarRange { get; set; }
     }
+
+    public class ProductModelResponse
+    {
+
+        [JsonPropertyName("total_itens_found")]
+        public int TotalProducts { get; set; }
+
+        [JsonPropertyName("product")]
+        public List<dynamic> Products { get; set; }
+
+    }
+
 }

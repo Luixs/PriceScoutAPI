@@ -26,13 +26,13 @@ namespace PriceScoutAPI.Models
     public class ItemAliExpress
     {
         [JsonPropertyName("itemId")]
-        public long Id { get; set; }
+        public dynamic Id { get; set; }
 
         [JsonPropertyName("title")]
         public string Title { get; set; }
 
         [JsonPropertyName("sales")]
-        public int Sales{ get; set; }
+        public int Sales { get; set; }
 
         [JsonPropertyName("image")]
         public string ImageUrl { get; set; }
@@ -42,6 +42,9 @@ namespace PriceScoutAPI.Models
 
         [JsonPropertyName("averageStarRate")]
         public double? StarRate { get; set; }
+
+        [JsonPropertyName("itemUrl")]
+        public string? ItemUrl { get; set; }
     }
 
     public class ItemAliSku
@@ -72,6 +75,25 @@ namespace PriceScoutAPI.Models
 
         [JsonPropertyName("requestId")]
         public string RequestId { get; set; }
+
+        [JsonPropertyName("apiVersion")]
+        public string ApiVersion { get; set; }
+
+    }
+
+    public class AliExpressSingleModel
+    {
+        [JsonPropertyName("result")]
+        public InfoAliExpressProduct Result { get; set; }
+    }
+
+    public class InfoAliExpressProduct 
+    {
+        [JsonPropertyName("status")]
+        public StatusAli Status { get; set; }
+
+        [JsonPropertyName("item")]
+        public ItemAliExpress Item { get; set; }
 
     }
 }

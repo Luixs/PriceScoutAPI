@@ -15,6 +15,13 @@ namespace PriceScoutAPI.Models
             Message = "OK";
         }
 
+        public BaseResponse(string m, dynamic d)
+        {
+            this.Success = true;
+            this.Message = m;
+            this.Data = d;
+        }
+
         // <summary>
         /// Indicates whether the request was successful or not.
         /// </summary>
@@ -26,6 +33,6 @@ namespace PriceScoutAPI.Models
         public string Message { get; set; }
 
         [JsonPropertyName("data")]
-        public SearchModelResponse Data { get; set; }
+        public dynamic Data { get; set; }
     }
 }
