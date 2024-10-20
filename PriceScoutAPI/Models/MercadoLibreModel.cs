@@ -79,4 +79,21 @@ namespace PriceScoutAPI.Models
         public int ReviewCount { get; set; }
 
     }
+    public class MercadoLibreSingleProductModel
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("share")]
+        public MercadoLibreShare ShareInfos { get; set; }
+    }
+
+    public class MercadoLibreShare
+    {
+        [JsonPropertyName("permaLink")]
+        public string Url { get; set; }
+
+        [JsonPropertyName("title")]
+        public string Name { get; set; }
+    }
 }

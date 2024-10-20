@@ -233,8 +233,8 @@ namespace PriceScoutAPI.Controllers
                                 Name = p.Name,
                                 ImageUrl = p.Pictures?.Images?.Url ?? "",
                                 Price = (p.PriceInfo.Currency != null && p.PriceInfo.Currency.ToUpper().Equals(currencySelected)) ? p.PriceInfo.Amount : p.PriceInfo.Amount  * currencyMultiply,
-                                StarRange = p.Reviews.RatingAverage,
-                                Url = p.Url,
+                                StarRange = p?.Reviews?.RatingAverage ?? 0,
+                                Url = p?.Url ?? "",
                                 IsBestSeller = p.SelerInfo.SellerStatus.Equals("platinum") ? true : false,
                             });
                         }

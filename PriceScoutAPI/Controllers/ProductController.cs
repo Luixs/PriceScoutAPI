@@ -19,12 +19,14 @@ namespace PriceScoutAPI.Controllers
         public ProductController (
             ILogger<ProductController> logger,
             IAmazonHelper amazonHelper,
-            IAliExpressHelper aliExpressHelper
+            IAliExpressHelper aliExpressHelper,
+            IMercadoLibreHelper mercadoLibreHelper
         )
         {
             _logger = logger;
             _amazonHelper = amazonHelper;
             _aliExpressHelper = aliExpressHelper;
+            _mercadoLibreHelper = mercadoLibreHelper;
         }
 
 
@@ -84,7 +86,11 @@ namespace PriceScoutAPI.Controllers
                 // --- TRY TO CATCH PRODUCT ON ALI EXPRESS
                 var aliExpressP = await _aliExpressHelper.FindUniqueProduct(id);
                 if (aliExpressP.Result.Item != null) dynamicReturnList.Add(aliExpressP);
-                // --- Putting on the current returns model
+
+                // --- TRY TO CATCH PRODUCT ON MERCADO LIBRE
+                var mbProduct = await _mercadoLibreHelper.FindUniqueProduct(id);
+
+                if(mbProduct != null && mbProduct.Id != null) dynamicReturnList.Add(mbProduct);
 
                 return dynamicReturnList;
 
